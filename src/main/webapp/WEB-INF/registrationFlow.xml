@@ -1,0 +1,76 @@
+<flow xmlns="http://www.springframework.org/schema/webflow"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/webflow
+                          http://www.springframework.org/schema/webflow/spring-webflow.xsd">
+
+
+	<var name="userDetails" class="com.ankith.model.User" />
+	<var name="userAddress" class="com.ankith.model.Address" />
+	<var name="billingAddress" class="com.ankith.model.Address" />
+	<on-start>
+
+		<evaluate expression="registerHandler.initFlow()" result="flowScope.registerModel"></evaluate>
+	</on-start>
+
+	<view-state id="start" view="Register" model="userDetails">
+		<transition on="submit" to="validate" />
+		<transition on="cancel" to="toHome" validate="false" />
+		<!-- <on-exit>
+			<evaluate expression="handlerClass.bindingUser(registerModel,users)" />
+			
+		</on-exit> -->
+
+	</view-state>
+
+<action-state id="validate">
+<evaluate expression="registerHandler.bindingUser(registerModel,userDetails,messageContext)"/>
+<transition on="success" to="AddressPage"/>
+<transition on="failure" to="start"/>
+</action-state>
+
+	<view-state id="AddressPage" model="userAddress">
+		<transition on="submit" to="BillingAddress" />
+		<transition on="concel" to="toHome" validate="false"/>
+		<transition on="back" to="start" />
+		<on-exit>
+			<evaluate
+				expression="registerHandler.bindingUserAddresss(registerModel,userAddress)" />
+		</on-exit>
+
+	</view-state>
+	<view-state id="BillingAddress" model="billingAddress">
+
+		<transition on="submit" to="UserConfirmation" />
+		<transition on="cancel" to="toHome" validate="false" />
+		<transition on="back" to="BillingAddress" />
+		<on-exit>
+			<evaluate
+				expression="registerHandler.bindingBillingAddress(registerModel,billingAddress)" />
+		</on-exit>
+	</view-state>
+
+	<view-state id="UserConfirmation" model="registerModel">
+		<transition on="submit" to="saveuser" />
+		<transition on="edit" to="start" />
+
+	</view-state>
+	<action-state id="saveuser">
+
+		<evaluate expression="registerHandler.saveUser(registerModel)" />
+		<transition on="success" to="toHomeSuccess" />
+		<transition on="failure" to="toHome" />
+
+	</action-state>
+
+	<end-state id="welcome" view="welcome" />
+	<end-state id="toHome" view="externalRedirect:contextRelative:/home" />
+	<end-state id="toHomeSuccess" view="externalRedirect:contextRelative:/home?signupsuccess" />
+	<end-state id="toException"
+		view="externalRedirect:contextRelative:exception.jsp" />
+
+	<!-- these events are available in every state -->
+	<global-transitions>
+		<transition on="home" to="toHome" />
+		<transition on="error" to="toException" />
+	</global-transitions>
+</flow>
